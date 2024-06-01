@@ -1,0 +1,84 @@
+  * * `I` for the index register.
+ * * `DT` for the delay timer register.
+ * * `ST` for the sound timer register.
+ * * `K` for the key press register[^fake].
+ * * `F` for the address of the 8&times;5 fonts[^fake].
+ * * `B` for storing BCD values[^fake].
+ * * `HF` for the address of the larger 8&times;10 fonts[^fake].
+ * * `R` for the reserved RPL storage space[^fake][^rpl].
+ 
+  * These keywords are also reserved:
+ *
+ * * `.offset` to control where in the ROM output is placed
+ * * `.db` to write bytes to the ROM
+ * * `.dw` to write 16-bit
+
+ * ### Notation
+ *
+ * In the purposes of this document:
+ *
+ * * `Vx`, `Vy` and `Vn` refer to any of the 16 Chip8 registers, `V0` through `VF`
+ * * `addr` refers to a 12-bit address in the Chip8 interpreter's RAM.
+ * * `nnn` refers to a 12-bit value.
+ * * `n` refers to a 4-bit nibble value.
+ * * `kk` is a byte value.
+ *
+ * Decimal literals are a sequence of the characters `0-9`, for example `254`.
+ *
+ * Binary literals start with `%` followed by several `0` or `1` symbols,
+ * for example `%11111110`.
+ *
+ * Hexadecimal literals start with a `#` followed by characters from
+ * `0-9`, `a-f` or `A-F`, for example `#FE` for 254.
+ *
+ * ## Summary
+ *
+ * | Chip8 Instruction  |  Mnemonic         | Description                                        |
+ * |--------------------|-------------------|----------------------------------------------------|
+ * |  0nnn              |   `sys nnn`       | System Call                                        |
+ * |  00E0              |   `cls`           | Clear Screen                                       |
+ * |  00EE              |   `ret`           | Return                                             |
+ * |  1nnn              |   `jp addr`       | Jump to `addr`                                     |
+ * |  2nnn              |   `call addr`     | Call routine at `addr`                             |
+ * |  Bnnn              |   `jp v0, addr`   | Jump to `v0 + addr`                                |
+ * |  3nkk              |   `se Vn kk`      | Skip if `Vn` equals `kk`                           |
+ * |  5xy0              |   `se Vx Vy`      | Skip if `Vn` equals `Vy`                           |
+ * |  4nkk              |   `sne Vn kk`     | Skip if `Vn` does not equal `kk`                   |
+ * |  9xy0              |   `sne Vx Vy`     | Skip if `Vn` does not equal `Vy`                   |
+ * |  Fx55              |   `stor Vx`       | Stores `V0` through `Vx` to the address in `I`     |
+ * |  Fx65              |   `rstr Vx`       | Restores `V0` through `Vx` from the address in `I` |
+ * |  Fx29              |   `hex Vx`        | Loads the 8&times;5 font sprite of `Vx` into `I`   |
+ * |  Fx33              |   `bcd Vx`        | Load BCD value of `Vx` into `I` to `I+2`           |
+ * |  Fx15              |   `delay Vx`      | Loads register `Vx` into the delay timer           |
+ * |  Fx18              |   `sound Vx`      | Loads register `Vx` into the sound timer           |
+ * |  En9E              |   `skp Vn`        | Skip if key in `Vn` pressed                        |
+ * |  EnA1              |   `sknp Vn`       | Skip if key in `Vn` not pressed                    |
+ * |  8xy6              |   `shr Vx         | Shift `Vx` to the right with the value in `Vy`     |
+ * |  8xyE              |   `shl Vx         | Shift `Vx` to the left with the value in `Vy`      |
+ * |  Dxyn              |   `drw Vx, Vy, n` | Draw a sprite of `n` rows at `Vx,Vy`               |
+ 
+ 
+
+ * |  Fx07              |   `ld Vx, DT`     | Loads the delay timer into register `Vx`           |
+ * |  6xkk              |   `ld Vx, kk`     | Loads a literal value `kk` into `Vx`               |
+ * |  8xy0              |   `ld Vx, Vy`     | Loads register `Vy` into `Vx`                      |
+ * |  Annn              |   `ld I, nnn`     | Loads `nnn` into register `I`                      |
+ * |  Fn0A              |   `ld Vn, K`      | loads a key pressed into `Vn`                      |
+
+ * |  8xy4              |   `add Vx, Vy`    | Add the value in `Vy` to register `Vx`             |
+ * |  7nkk              |   `add Vn, kk`    | Add `kk` to register `Vx`                          |
+ * |  Fn1E              |   `add I, Vn`     | Add the value in `Vn` to register `I`              |
+ 
+ * |  8xy3              |   `xor Vx, Vy`    | Bitwise XOR the value in `Vy` with register `Vx`   |
+ 
+ * |  8xy5              |   `sub Vx, Vy`    | Subtract the value in `Vy` from register `Vx`      |
+ * |  8xy7              |   `subn Vx, Vy`   | Subtract the value in `Vy` from `Vx`, no carry     |
+ 
+ * |  8xy1              |   `or Vx, Vy`     | Bitwise OR the value in `Vy` with register `Vx`    |
+ 
+ * |  8xy2              |   `and Vx, Vy`    | Bitwise AND the value in `Vy` with register `Vx`   |
+ 
+ * |  Cnkk              |   `rnd Vn, kk`    | random number AND `kk` into `Vn`                   |
+ 
+
+ 
