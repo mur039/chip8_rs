@@ -128,7 +128,7 @@ impl Core {
                 return; //jump over the +=2 
             }
             0x2 => {  //call addr
-                self.stack.push(self.pc); //return address                
+                self.stack.push(self.pc + 2); //return address //silly
                 self.pc = nnn;
                 return;
             }, 
@@ -158,7 +158,7 @@ impl Core {
             }
 
             0x7=> { // * |  7xkk Add `kk` to register `Vx`
-                self.vregisters[x as usize] += kk as u8;
+                self.vregisters[x as usize] = self.vregisters[x as usize].wrapping_add(kk as u8);
             }
 
             0x8 => {
@@ -179,21 +179,21 @@ impl Core {
                         if (self.vregisters[x as usize ] as usize + self.vregisters[y as usize] as usize) > 255 {
                             self.vregisters[0xf] = 1;
                         }
-                        self.vregisters[x as usize] += self.vregisters[y as usize];
+                        self.vregisters[x as usize] = self.vregisters[x as usize].wrapping_add(self.vregisters[y as usize] as u8);
                     },
                     0x5=>{//8xy5 Subtract the value in `Vy` from register `Vx`
                         if self.vregisters[y as usize] > self.vregisters[x as usize] { self.vregisters[0xf] = 1; }
-                        self.vregisters[x as usize] -= self.vregisters[y as usize];
+                        self.vregisters[x as usize] = self.vregisters[x as usize].wrapping_sub(self.vregisters[y as usize] as u8);                        
                     },
 
                     0x6=>{//8xy6 Shift `Vx` to the right with the value in `Vy`  
-                        self.vregisters[x as usize] >>= self.vregisters[y as usize];
+                        self.vregisters[x as usize] >>= self.vregisters[y as usize] % 8;
                     },
                     0x7=>{//8xy7 Subtract the value in `Vy` from `Vx`, no carry 
                         self.vregisters[x as usize] -= self.vregisters[y as usize];
                     },
-                    0xE=>{//8xyE Shift `Vx` to the left with the value in `Vy`   
-                        self.vregisters[x as usize] <<= self.vregisters[y as usize];
+                    0xE=>{//8xyE Shift `Vx` to the left with the value in `Vy`
+                        self.vregisters[x as usize] <<= self.vregisters[y as usize] % 8;
                     },
                     _=> {panic!("Invalid opcode => {:03x} {:02x}", self.pc, opcode);}
                 }    
@@ -221,7 +221,7 @@ impl Core {
                 self.should_screen_update = true;
                 for i in 0..(opcode & 0xF) as u8 {
                     for bit in 0..8{
-                        self.screen[((self.vregisters[y as usize])+ i) as usize ][(self.vregisters[x as usize]) as usize + bit] ^= if ((self.memory[ (self.i_register + i as u16) as usize ] >> (7 - bit)) & 1 ) == 1 {true} else { false} ;    
+                        self.screen[((self.vregisters[y as usize]) + i) as usize ][ ((self.vregisters[x as usize]) as usize + bit) % 64 ] ^= if ((self.memory[ (self.i_register + i as u16) as usize ] >> (7 - bit)) & 1 ) == 1 {true} else { false} ;    
                     }
                 }
                 
